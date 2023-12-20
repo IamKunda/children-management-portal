@@ -16,24 +16,22 @@ export default function Register() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  const handleSelectChange = (e) => {
-    const { name, options } = e.target;
-    const selectedOptions = Array.from(options)
-      .filter((option) => option.selected)
-      .map((option) => option.value);
-
-    setFormData({ ...formData, [name]: selectedOptions });
+  const handleSelectChange = (event) => {
+    const selectedOptions = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value
+    );
+    setFormData({ ...formData, immunization: selectedOptions });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    // Here you can perform form submission logic
-    console.log(formData); // For demonstration, logging the form data
+
     fetch("/api/v1/users", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json", // Set the content type to JSON
+        "Content-Type": "application/json",
         // Add any other headers your API endpoint requires
       },
       body: JSON.stringify(formData), // Convert data to JSON string
@@ -53,21 +51,6 @@ export default function Register() {
         console.error("There was a problem with the request:", error);
       });
 
-    // const dataAsString = JSON.stringify(formData);
-    // const existingData = JSON.parse(localStorage.getItem("children"));
-    // if (existingData != null || existingData != undefined) {
-    //   console.log(existingData);
-    //   existingData.push(formData);
-    //   localStorage.setItem("children", JSON.stringify(existingData));
-    // } else {
-    //   const emptyArray = [];
-    //   emptyArray.push(formData);
-    //   formData.FirstName = "";
-    //   formData.Age = "";
-    //   formData.LastName = "";
-
-    //   localStorage.setItem("children", JSON.stringify(emptyArray));
-    // }
     setTimeout(() => {
       setLoading(false);
     }, 3000);
@@ -137,7 +120,6 @@ export default function Register() {
               >
                 <option value="male">Male</option>
                 <option value="female">Female</option>
-                <option value="other">Other</option>
               </select>
             </div>
             <div className="mb-3">
@@ -145,18 +127,24 @@ export default function Register() {
                 Immunization
               </label>
               <select
-                multiple
                 className="form-select"
                 id="immunization"
                 name="immunization"
                 value={formData.immunization}
                 onChange={handleSelectChange}
                 required
+                multiple
               >
-                <option value="bCG">BCG</option>
-                <option value="MMR">MMR</option>
-                <option value="RV">RV</option>
-                <option value="DTap">DTap</option>
+                {[
+                  { value: "BCG", label: "BCG" },
+                  { value: "MMR", label: "MMR" },
+                  { value: "RV", label: "RV" },
+                  { value: "DTap", label: "DTap" },
+                ].map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
             <button type="submit" className="btn btn-primary">
