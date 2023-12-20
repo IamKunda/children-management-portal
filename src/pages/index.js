@@ -1,11 +1,46 @@
 import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import styles from "@/styles/Home.module.css";
+import Table from "react-bootstrap/Table";
+import { useEffect, useState } from "react";
+import CustomLoader from "@/components/customLoader";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [pageLoading, setpageLoading] = useState(true);
+  const [pageData, setPageData] = useState([]);
+  const [dataEmpty, setDataEmpty] = useState(true);
+  useEffect(() => {
+    fetch("/api/v1/users")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+        return response.json(); // Parse the JSON response
+      })
+      .then((data) => {
+        // Handle the data from the API response
+        console.log("Response:", data.data);
+        console.log("PageData Before " + pageData);
+        setPageData(data);
+        console.log("PageData After" + pageData);
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error("There was a problem with the request:", error);
+      });
+    if (pageData.length > 0) {
+      setDataEmpty(false);
+    } else {
+      setPageData([]);
+      setDataEmpty(true);
+    }
+
+    setTimeout(() => {
+      setpageLoading(false);
+    }, 4000);
+  }, []);
   return (
     <>
       <Head>
@@ -14,8 +49,42 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <p>Display a list of added children.</p>
-      <p>Items in the list should be clickable and should go to profile page</p>
+      {pageLoading ? (
+        <CustomLoader />
+      ) : dataEmpty ? (
+        <div>
+          <p>No Records have been added yet</p>
+          <a href="/register" className="btn btn-primary">
+            Add
+          </a>
+        </div>
+      ) : (
+        <div>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Immunizations</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageData.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.firstname}</td>
+                  <td>{item.lastname}</td>
+                  <td>{item.age}</td>
+                  <td>{item.gender}</td>
+                  <td>{item.immunization}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      )}
     </>
   );
 }

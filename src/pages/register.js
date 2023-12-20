@@ -1,11 +1,13 @@
+import CustomLoader from "@/components/customLoader";
 import { useState } from "react";
-import Spinner from "react-bootstrap/Spinner";
+import { Axios } from "axios";
+
 export default function Register() {
   const [formData, setFormData] = useState({
-    FirstName: "",
-    LastName: "",
-    Age: "",
-    gender: "",
+    firstName: "",
+    lastName: "",
+    age: "",
+    gender: "male",
     immunization: [],
   });
   const [loading, setLoading] = useState(false);
@@ -28,78 +30,95 @@ export default function Register() {
     setLoading(true);
     // Here you can perform form submission logic
     console.log(formData); // For demonstration, logging the form data
-    const dataAsString = JSON.stringify(formData);
-    const existingData = JSON.parse(localStorage.getItem("children"));
-    if (existingData != null || existingData != undefined) {
-      console.log(existingData);
-      existingData.push(formData);
-      localStorage.setItem("children", JSON.stringify(existingData));
-    } else {
-      const emptyArray = [];
-      emptyArray.push(formData);
-      formData.FirstName = "";
-      formData.Age = "";
-      formData.LastName = "";
+    fetch("/api/v1/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Set the content type to JSON
+        // Add any other headers your API endpoint requires
+      },
+      body: JSON.stringify(formData), // Convert data to JSON string
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+        return response.json(); // Parse the JSON response
+      })
+      .then((data) => {
+        // Handle the data from the API response
+        console.log("Response:", data);
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error("There was a problem with the request:", error);
+      });
 
-      localStorage.setItem("children", JSON.stringify(emptyArray));
-    }
+    // const dataAsString = JSON.stringify(formData);
+    // const existingData = JSON.parse(localStorage.getItem("children"));
+    // if (existingData != null || existingData != undefined) {
+    //   console.log(existingData);
+    //   existingData.push(formData);
+    //   localStorage.setItem("children", JSON.stringify(existingData));
+    // } else {
+    //   const emptyArray = [];
+    //   emptyArray.push(formData);
+    //   formData.FirstName = "";
+    //   formData.Age = "";
+    //   formData.LastName = "";
+
+    //   localStorage.setItem("children", JSON.stringify(emptyArray));
+    // }
     setTimeout(() => {
       setLoading(false);
     }, 3000);
-    window.location.reload();
+    window.location.replace("/");
+    // setLoading(false);
   };
   return loading ? (
-    <div
-      className="d-flex  justify-conteny-center align-items-center"
-      style={{ height: "100vh" }}
-    >
-      <Spinner animation="border" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </Spinner>
-    </div>
+    <CustomLoader />
   ) : (
     <div className="container mt-5">
       <div className="row justify-content-center">
         <div className="col-md-6">
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="FirstName" className="form-label">
+              <label htmlFor="firstName" className="form-label">
                 First Name
               </label>
               <input
                 type="text"
                 className="form-control"
-                id="FirstName"
-                name="FirstName"
-                value={formData.FirstName}
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="LastName" className="form-label">
+              <label htmlFor="lastName" className="form-label">
                 Last Name
               </label>
               <input
                 type="text"
                 className="form-control"
-                id="LastName"
-                name="LastName"
-                value={formData.LastName}
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="Age" className="form-label">
+              <label htmlFor="age" className="form-label">
                 Age
               </label>
               <input
-                type="Age"
+                type="number"
                 className="form-control"
-                id="Age"
-                name="Age"
-                value={formData.Age}
+                id="age"
+                name="age"
+                value={formData.age}
                 onChange={handleChange}
                 required
               />
